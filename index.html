@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khalid Store | Professional System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <title>Khalid Store | النظام المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -12,124 +12,104 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        :root { --orange: #ff8c00; --blue: #0056b3; --bg: #0a0a0c; --card: #111; --wa: #25d366; }
-        body { 
-            font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 100px; 
-            background-size: cover; background-attachment: fixed; background-position: center;
-        }
+        :root { --main: #ff8c00; --blue: #0056b3; --bg: #0a0a0c; --card: #16161a; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; background-size: cover; background-attachment: fixed; }
         
-        .float-social { position: fixed; right: 20px; bottom: 30px; display: flex; flex-direction: column; gap: 12px; z-index: 9999; }
-        .float-social a { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.6rem; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
-        .wa-bg { background: var(--wa); }
-
-        header { text-align: center; padding: 60px 20px; background: #111; border-bottom: 3px solid var(--orange); background-size: cover; background-position: center; }
+        header { text-align: center; padding: 40px 10px; background: #000; border-bottom: 3px solid var(--main); background-size: cover; background-position: center; }
         
-        /* عرض منتجين جنب بعض */
+        /* شبكة المنتجات (2 جنب بعض) */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
-        .card { background: var(--card); border-radius: 12px; border: 1px solid #222; overflow: hidden; position: relative; display: flex; flex-direction: column; }
-        .card-img-box { width: 100%; aspect-ratio: 1/1; position: relative; cursor: pointer; background: #000; }
-        .card-img-box img { width: 100%; height: 100%; object-fit: contain; }
-        .img-badge { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 5px; font-size: 0.6rem; }
+        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; display: flex; flex-direction: column; }
+        .card-img { width: 100%; aspect-ratio: 1/1; object-fit: contain; background: #000; cursor: pointer; }
 
-        /* لوحة التحكم الأصلية */
-        #adminPanel { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 10000; overflow-y: auto; padding: 25px; }
-        .admin-box { background: #16161a; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        .inp { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #444; color: white; border-radius: 10px; box-sizing: border-box; font-family: 'Cairo'; }
+        /* لوحة التحكم (الظاهرة عند الطلب) */
+        #adminPanel { display: none; position: fixed; inset: 0; background: #f4f4f4; color: #333; z-index: 10000; overflow-y: auto; padding: 20px; }
+        .admin-box { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-right: 5px solid var(--main); }
+        .inp { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; }
         
-        .edit-row { display: flex; align-items: center; justify-content: space-between; background: #000; padding: 10px; border-radius: 10px; margin-bottom: 10px; border-right: 4px solid var(--orange); }
-        .edit-row img { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
+        /* زر لوحة التحكم الواضح */
+        .admin-trigger { background: var(--main); color: white; border: none; padding: 15px; width: 100%; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 20px; }
 
-        /* نافذة الصور والطلبات */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 20000; overflow-y: auto; padding: 10px; }
-        .modal-content { background: #111; padding: 20px; border-radius: 20px; max-width: 600px; margin: 5px auto; border: 1px solid var(--orange); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; overflow-y: auto; padding: 15px; }
+        .modal-content { background: #fff; color: #333; padding: 20px; border-radius: 20px; max-width: 500px; margin: auto; }
         
-        #viewer { display: none; text-align: center; margin-bottom: 20px; position: relative; }
-        #viewer img { width: 100%; max-height: 400px; object-fit: contain; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Cairo'; }
+        .btn-main { background: var(--main); color: white; }
         
-        #invoiceBox { background: white; color: black; padding: 20px; direction: ltr; font-family: 'Cairo'; width: 100%; box-sizing: border-box; }
-        .inv-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .inv-table td, .inv-table th { border: 1px solid #ddd; padding: 8px; font-size: 0.8rem; }
-
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 8px; font-family: 'Cairo'; }
-        .btn-orange { background: var(--orange); color: white; }
-        .btn-blue { background: var(--blue); color: white; }
+        #invoiceBox { background: white; padding: 20px; border: 1px solid #000; color: #000; direction: ltr; }
     </style>
 </head>
 <body id="mainBody">
 
-<div class="float-social"><a href="#" id="linkWA" class="wa-bg" target="_blank"><i class="fab fa-whatsapp"></i></a></div>
-<header id="mainHeader"><h1 id="shopName" style="margin:0; color:var(--orange);">Khalid Store</h1></header>
+<header id="mainHeader"><h1 id="shopName">Khalid Store</h1></header>
+
 <div id="storeGrid" class="grid"></div>
 
+<button class="admin-trigger" onclick="askPass()">⚙️ دخول لوحة التحكم (للأدمن فقط)</button>
+
 <div id="adminPanel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>⚙️ لوحة التحكم الشاملة</h2>
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="background:red; color:white; border:none; padding:10px 20px; border-radius:10px;">إغلاق</button>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>🛠 لوحة الإدارة الشاملة</h2>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="background:red; color:white; border:none; padding:10px;">إغلاق</button>
     </div>
 
     <div class="admin-box">
-        <h3>🎨 تخصيص المظهر والإعدادات</h3>
-        <input type="text" id="setT" class="inp" placeholder="اسم الموقع الأساسي">
-        <label>صورة الغلاف (Header):</label><input type="file" class="inp" onchange="encodeCover('header')">
-        <label>خلفية الموقع (Background):</label><input type="file" class="inp" onchange="encodeCover('body')">
-        <input type="text" id="setW" class="inp" placeholder="رقم الواتساب">
-        <input type="text" id="setPass" class="inp" placeholder="كلمة المرور الجديدة">
-        <button class="btn btn-blue" onclick="saveSettings()">حفظ كل التغييرات</button>
+        <h3>🎨 إعدادات المتجر (الاسم والغلاف)</h3>
+        <input type="text" id="setT" class="inp" placeholder="اسم المتجر">
+        <input type="text" id="setW" class="inp" placeholder="رقم واتساب الطلبات">
+        <label>تغيير الغلاف (Header):</label><input type="file" class="inp" onchange="encodeCover('header')">
+        <label>تغيير الخلفية (Background):</label><input type="file" class="inp" onchange="encodeCover('body')">
+        <input type="text" id="setPass" class="inp" placeholder="تغيير كلمة السر">
+        <button class="btn btn-main" onclick="saveSettings()">حفظ الإعدادات</button>
     </div>
 
     <div class="admin-box">
-        <h3 id="formTitle">📦 إضافة منتج (صور متعددة)</h3>
+        <h3>📦 إضافة منتج جديد (4 صور)</h3>
         <input type="text" id="pN" class="inp" placeholder="اسم المنتج">
-        <input type="text" id="pC" class="inp" placeholder="Item Code (PN)">
-        <input type="number" id="pNew" class="inp" placeholder="السعر الحالي">
+        <input type="text" id="pC" class="inp" placeholder="كود المنتج">
+        <input type="number" id="pP" class="inp" placeholder="السعر">
         <textarea id="pD" class="inp" placeholder="وصف المنتج"></textarea>
-        <label>صور المنتج (يمكنك اختيار حتى 4 صور):</label>
-        <input type="file" id="pImg" class="inp" multiple onchange="encodeMultiImgs()">
-        <div id="previews" style="display:flex; gap:5px; margin:10px 0;"></div>
-        <button class="btn btn-orange" onclick="handleP()">حفظ المنتج</button>
+        <label>اختر الصور (حتى 4):</label><input type="file" class="inp" multiple onchange="encodeMultiImgs()">
+        <button class="btn btn-main" onclick="addProduct()">رفع المنتج للمتجر</button>
     </div>
 
-    <div class="admin-box"><h3>🚨 الطلبات الجديدة</h3><div id="listOrders"></div></div>
+    <div class="admin-box"><h3>📥 الطلبات الجديدة</h3><div id="listOrders"></div></div>
     <div class="admin-box"><h3>✅ الأرشيف</h3><div id="listArchive"></div></div>
-    <div class="admin-box"><h3>📦 إدارة المخزن</h3><div id="listProds"></div></div>
+    <div class="admin-box"><h3>🗒 إدارة المنتجات</h3><div id="listProds"></div></div>
 </div>
 
 <div id="modal" class="modal">
     <div class="modal-content">
-        <div id="viewer">
-            <img id="vImg" src="">
-            <div style="margin-top:10px;">
-                <button onclick="moveV(-1)" class="btn" style="width:40%; display:inline-block;">السابق</button>
-                <button onclick="moveV(1)" class="btn" style="width:40%; display:inline-block;">التالي</button>
+        <div id="imgViewer" style="text-align:center;">
+            <img id="vImg" src="" style="width:100%; aspect-ratio:1/1; object-fit:contain;">
+            <div style="margin:10px 0;">
+                <button onclick="moveV(-1)" style="padding:5px 15px;">السابق</button>
+                <button onclick="moveV(1)" style="padding:5px 15px;">التالي</button>
             </div>
         </div>
-
-        <div id="formSection">
-            <h3 id="targetN" style="text-align:center; color:var(--orange);"></h3>
+        <div id="orderForm">
+            <h3 id="targetN" style="text-align:center;"></h3>
             <input type="text" id="cuN" class="inp" placeholder="اسم العميل">
             <input type="text" id="cuP" class="inp" placeholder="رقم الهاتف">
-            <input type="number" id="cuQ" class="inp" placeholder="الكمية" value="1">
-            <button class="btn btn-orange" onclick="submitOrder()">إرسال الطلب</button>
+            <input type="number" id="cuQ" class="inp" value="1" class="inp">
+            <button class="btn btn-main" onclick="confirmOrder()">تأكيد الطلب</button>
         </div>
-
         <div id="invoiceSection" style="display:none;">
             <div id="invoiceBox">
-                <h2 id="v_inv_shop" style="text-align:center; margin:0;"></h2>
-                <p style="text-align:center; border-bottom:1px solid #000;">INVOICE #<span id="v_serial"></span></p>
-                <table class="inv-table">
-                    <tr><td>Item:</td><td id="v_item"></td></tr>
-                    <tr><td>Qty:</td><td id="v_qty"></td></tr>
-                    <tr><td>Total:</td><td><b id="v_total"></b> AED</td></tr>
-                </table>
+                <h3 id="inv_shop" style="text-align:center;"></h3>
+                <p>Order: #<span id="inv_ser"></span></p>
+                <p>Item: <span id="inv_item"></span></p>
+                <p>Total: <b id="inv_total"></b> AED</p>
             </div>
-            <button class="btn btn-blue" onclick="downloadInv()">تحميل الفاتورة 📥</button>
-            <button class="btn" style="background:var(--wa); color:white;" onclick="sendWA()">واتساب 💬</button>
+            <button class="btn btn-main" onclick="downloadInv()">تحميل الفاتورة 📥</button>
+            <button class="btn" style="background:#25d366; color:white;" onclick="sendWA()">واتساب 💬</button>
         </div>
-        <button class="btn" style="background:none; color:#999;" onclick="closeModal()">إغلاق</button>
+        <button class="btn" onclick="closeModal()">إغلاق</button>
     </div>
 </div>
 
 <script>
+    // بيانات الـ Firebase الخاصة بك
     const firebaseConfig = {
         apiKey: "AIzaSyD6nEUwZKumRxmYUdqiJISTYsKcy5j_ISM",
         authDomain: "khalid-store-86442.firebaseapp.com",
@@ -139,63 +119,79 @@
         messagingSenderId: "857306041339",
         appId: "1:857306041339:web:b5b38da9563fde210d595e"
     };
-    firebase.initializeApp(firebaseConfig); const db = firebase.database();
-    
-    let tempImages = [], tempHeader = "", tempBody = "", activeP = null, currentOrder = null, sets = {}, vIdx = 0;
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // جلب الإعدادات
-    db.ref('settings').on('value', s => { 
+    let sets = {}, tempImages = [], tempHeader = "", tempBody = "", activeP = null, vIdx = 0, currentOrder = null;
+
+    // جلب الإعدادات والمنتجات
+    db.ref('settings').on('value', s => {
         sets = s.val() || { title: "Khalid Store", wa: "966", pass: "123", lastSerial: 1000 };
         document.getElementById('shopName').innerText = sets.title;
-        document.getElementById('linkWA').href = "https://wa.me/" + sets.wa;
         if(sets.hB) document.getElementById('mainHeader').style.backgroundImage = `url('${sets.hB}')`;
         if(sets.bB) document.getElementById('mainBody').style.backgroundImage = `url('${sets.bB}')`;
-        document.getElementById('setT').value = sets.title; document.getElementById('setW').value = sets.wa; document.getElementById('setPass').value = sets.pass;
     });
 
-    // جلب المنتجات
     db.ref('items').on('value', s => {
-        const grid = document.getElementById('storeGrid'); const list = document.getElementById('listProds');
-        grid.innerHTML = ''; list.innerHTML = ''; const data = s.val();
+        const grid = document.getElementById('storeGrid');
+        const list = document.getElementById('listProds');
+        grid.innerHTML = ''; list.innerHTML = '';
+        const data = s.val();
         if(data) Object.keys(data).forEach(k => {
             const i = data[k]; const imgs = i.images || [i.img];
-            grid.innerHTML += `
-                <div class="card">
-                    <div class="card-img-box" onclick="openOrder('${k}')">
-                        <img src="${imgs[0]}">
-                        <div class="img-badge"><i class="far fa-images"></i> ${imgs.length}</div>
-                    </div>
-                    <div style="padding:10px; text-align:center;">
-                        <h4 style="margin:5px 0; font-size:0.85rem;">${i.name}</h4>
-                        <b style="color:var(--orange)">${i.price} AED</b>
-                    </div>
-                </div>`;
-            list.innerHTML += `<div class="edit-row"><span>${i.name}</span><button onclick="db.ref('items/${k}').remove()" style="background:red; color:white; border:none; padding:5px; border-radius:5px;">حذف</button></div>`;
+            grid.innerHTML += `<div class="card" onclick="openOrder('${k}')"><img src="${imgs[0]}" class="card-img"><div style="padding:10px; text-align:center;"><b>${i.name}</b><br><span style="color:var(--main)">${i.price} AED</span></div></div>`;
+            list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;"><span>${i.name}</span><button onclick="db.ref('items/${k}').remove()" style="color:red;">حذف</button></div>`;
         });
     });
 
-    // إدارة الصور في الإضافة
+    // جلب الطلبات
+    db.ref('orders').on('value', s => {
+        const l = document.getElementById('listOrders'); const a = document.getElementById('listArchive');
+        l.innerHTML = ''; a.innerHTML = ''; const data = s.val();
+        if(data) Object.keys(data).forEach(k => {
+            const o = data[k];
+            const html = `<div style="background:#eee; padding:10px; margin-bottom:5px; border-radius:5px;"><b>#${o.serial} - ${o.customer}</b><br>${o.name} (${o.qty})<br><button onclick="db.ref('orders/${k}').update({status:'archived'})">نقل للأرشيف</button></div>`;
+            if(o.status === 'new') l.innerHTML += html; else a.innerHTML += html;
+        });
+    });
+
+    // وظائف الميديا
     function encodeMultiImgs() {
-        const files = event.target.files; tempImages = []; document.getElementById('previews').innerHTML = '';
+        const files = event.target.files; tempImages = [];
         Array.from(files).slice(0, 4).forEach(f => {
-            const r = new FileReader(); r.onloadend = () => { tempImages.push(r.result); document.getElementById('previews').innerHTML += `<img src="${r.result}" style="width:40px; height:40px;">`; }; r.readAsDataURL(f);
+            const r = new FileReader(); r.onloadend = () => tempImages.push(r.result); r.readAsDataURL(f);
         });
     }
 
-    function handleP() {
-        const d = { name: document.getElementById('pN').value, code: document.getElementById('pC').value, price: document.getElementById('pNew').value, desc: document.getElementById('pD').value, images: tempImages };
-        db.ref('items').push(d).then(() => { alert("تم الحفظ"); location.reload(); });
+    function encodeCover(t) {
+        const f = event.target.files[0]; const r = new FileReader();
+        r.onloadend = () => { if(t==='header') tempHeader = r.result; else tempBody = r.result; }; r.readAsDataURL(f);
     }
 
-    // الطلب والنافذة المنبثقة
+    function addProduct() {
+        const name = document.getElementById('pN').value; const price = document.getElementById('pP').value;
+        const code = document.getElementById('pC').value; const desc = document.getElementById('pD').value;
+        if(name && price && tempImages.length > 0) {
+            db.ref('items').push({ name, price, code, desc, images: tempImages }).then(() => alert("تمت الإضافة"));
+        }
+    }
+
+    function saveSettings() {
+        let u = { title: document.getElementById('setT').value, wa: document.getElementById('setW').value, pass: document.getElementById('setPass').value };
+        if(tempHeader) u.hB = tempHeader; if(tempBody) u.bB = tempBody;
+        db.ref('settings').update(u).then(() => alert("تم الحفظ"));
+    }
+
+    // إدارة النوافذ والطلبات
+    function askPass() { if(prompt("أدخل كلمة المرور (123):") === sets.pass) document.getElementById('adminPanel').style.display='block'; }
+    
     function openOrder(k) {
         db.ref('items/'+k).once('value', s => {
             activeP = s.val(); vIdx = 0;
             document.getElementById('targetN').innerText = activeP.name;
             document.getElementById('vImg').src = (activeP.images || [activeP.img])[0];
-            document.getElementById('viewer').style.display = 'block';
             document.getElementById('modal').style.display = 'block';
-            document.getElementById('formSection').style.display = 'block';
+            document.getElementById('orderForm').style.display = 'block';
             document.getElementById('invoiceSection').style.display = 'none';
         });
     }
@@ -206,42 +202,22 @@
         document.getElementById('vImg').src = imgs[vIdx];
     }
 
-    function submitOrder() {
+    function confirmOrder() {
         const nS = (sets.lastSerial || 1000) + 1;
-        currentOrder = { name: activeP.name, code: activeP.code || 'N/A', price: activeP.price, customer: document.getElementById('cuN').value, phone: document.getElementById('cuP').value, qty: document.getElementById('cuQ').value, serial: nS, date: new Date().toLocaleDateString() };
-        db.ref('orders').push({...currentOrder, status: 'new'}); db.ref('settings').update({ lastSerial: nS });
+        currentOrder = { name: activeP.name, code: activeP.code || 'N/A', customer: document.getElementById('cuN').value, qty: document.getElementById('cuQ').value, price: activeP.price, serial: nS };
+        db.ref('orders').push({...currentOrder, status:'new'}); db.ref('settings').update({lastSerial: nS});
         
-        document.getElementById('v_inv_shop').innerText = sets.title;
-        document.getElementById('v_serial').innerText = nS;
-        document.getElementById('v_item').innerText = currentOrder.name;
-        document.getElementById('v_qty').innerText = currentOrder.qty;
-        document.getElementById('v_total').innerText = currentOrder.price * currentOrder.qty;
+        document.getElementById('inv_shop').innerText = sets.title;
+        document.getElementById('inv_ser').innerText = nS;
+        document.getElementById('inv_item').innerText = currentOrder.name;
+        document.getElementById('inv_total').innerText = currentOrder.price * currentOrder.qty;
         
-        document.getElementById('formSection').style.display = 'none';
-        document.getElementById('viewer').style.display = 'none';
+        document.getElementById('orderForm').style.display = 'none';
         document.getElementById('invoiceSection').style.display = 'block';
     }
 
-    // نفس وظائف الإدارة الأصلية
-    function encodeCover(t) { const f = event.target.files[0]; const r = new FileReader(); r.onloadend = () => { if(t==='header') tempHeader=r.result; else tempBody=r.result; }; r.readAsDataURL(f); }
-    function saveSettings() {
-        let u = { title: document.getElementById('setT').value, wa: document.getElementById('setW').value, pass: document.getElementById('setPass').value };
-        if(tempHeader) u.hB = tempHeader; if(tempBody) u.bB = tempBody;
-        db.ref('settings').update(u).then(() => alert("تم الحفظ"));
-    }
-
-    db.ref('orders').on('value', s => {
-        const l = document.getElementById('listOrders'); const a = document.getElementById('listArchive');
-        l.innerHTML = ''; a.innerHTML = ''; const d = s.val();
-        if(d) Object.keys(d).forEach(k => {
-            const o = d[k]; const html = `<div class="edit-row"><span>#${o.serial} - ${o.customer}</span><button onclick="db.ref('orders/${k}').update({status:'archived'})" style="background:green; color:white; border:none; padding:5px; border-radius:5px;">أرشفة</button></div>`;
-            if(o.status === 'new') l.innerHTML += html; else a.innerHTML += html;
-        });
-    });
-
-    function downloadInv() { html2canvas(document.getElementById('invoiceBox')).then(c => { const l = document.createElement('a'); l.download = 'inv.png'; l.href = c.toDataURL(); l.click(); }); }
-    function sendWA() { window.open(`https://wa.me/${sets.wa}?text=طلب رقم ${currentOrder.serial}: ${currentOrder.name}`, '_blank'); }
-    function checkAdmin() { if(prompt("Pass:") === sets.pass) document.getElementById('adminPanel').style.display='block'; }
+    function sendWA() { window.open(`https://wa.me/${sets.wa}?text=طلب جديد: ${currentOrder.name}`, '_blank'); }
+    function downloadInv() { html2canvas(document.getElementById('invoiceBox')).then(c => { const l = document.createElement('a'); l.download='inv.png'; l.href=c.toDataURL(); l.click(); }); }
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
 </script>
 
