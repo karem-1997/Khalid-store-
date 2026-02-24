@@ -3,68 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khalid Store | المطور</title>
+    <title>Khalid Store | Auto Slider & Tax Invoice</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         :root { --main: #ff8c00; --dark: #0a0a0c; --card: #16161a; }
-        body { font-family: 'Cairo', sans-serif; background: var(--dark); color: white; margin: 0; padding-bottom: 60px; background-size: cover; background-attachment: fixed; }
+        body { font-family: 'Cairo', sans-serif; background: var(--dark); color: white; margin: 0; padding-bottom: 60px; }
+        header { text-align: center; padding: 25px 10px; background: #000; border-bottom: 3px solid var(--main); }
         
-        header { text-align: center; padding: 30px 10px; background: #000; border-bottom: 3px solid var(--main); }
-        
-        /* شبكة المنتجات (2 جنب بعض) */
+        /* شبكة المنتجات (2 في الصف) */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
-        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; display: flex; flex-direction: column; cursor: pointer; }
-        .card-img { width: 100%; aspect-ratio: 1/1; object-fit: contain; background: #000; }
-        .p-info { padding: 8px; text-align: center; }
-        .p-price { color: var(--main); font-weight: bold; }
+        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid #222; display: flex; flex-direction: column; cursor: pointer; position: relative; }
+        
+        /* حاوية الصورة مع تأثير التغيير */
+        .img-container { width: 100%; aspect-ratio: 1/1; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .card-img { width: 100%; height: 100%; object-fit: contain; transition: opacity 0.5s ease-in-out; }
 
-        /* لوحة التحكم الشاملة */
+        /* لوحة التحكم */
         #adminPanel { display: none; position: fixed; inset: 0; background: #f0f0f0; color: #333; z-index: 99999; overflow-y: auto; padding: 20px; }
         .admin-box { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-right: 5px solid var(--main); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .inp { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: 'Cairo'; }
         
+        /* زر الأدمن */
         .admin-btn { position: fixed; bottom: 10px; left: 10px; font-size: 11px; color: #555; background: rgba(255,255,255,0.1); border: none; cursor: pointer; z-index: 999; padding: 5px; border-radius: 4px; }
 
-        /* المودال وعارض الصور */
+        /* المودال */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; overflow-y: auto; padding: 10px; }
-        .modal-content { background: #fff; color: #333; padding: 20px; border-radius: 20px; max-width: 500px; margin: 40px auto; position: relative; }
+        .modal-content { background: #fff; color: #333; padding: 20px; border-radius: 20px; max-width: 500px; margin: 40px auto; }
         
         .viewer-box { position: relative; width: 100%; text-align: center; background: #000; border-radius: 10px; overflow: hidden; }
         .viewer-box img { width: 100%; max-height: 350px; object-fit: contain; }
-        .v-nav { position: absolute; top: 50%; transform: translateY(-50%); background: var(--main); color: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; font-size: 18px; z-index: 10; }
+        .v-nav { position: absolute; top: 50%; transform: translateY(-50%); background: var(--main); color: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; }
 
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-family: 'Cairo'; }
         .btn-main { background: var(--main); color: white; }
-        
-        .row-item { background: #eee; padding: 10px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--main); }
+        .btn-red { background: #d32f2f; color: white; }
+        .row-item { background: #eee; padding: 10px; margin-bottom: 8px; border-radius: 8px; border-right: 4px solid var(--main); color: #333; }
+        .row-actions { display: flex; gap: 5px; margin-top: 10px; }
+        .row-actions button { flex: 1; padding: 8px; font-size: 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-family: 'Cairo'; }
+
+        /* الفاتورة الضريبية */
+        #invoiceBox { background: #fff; color: #000; padding: 20px; border: 2px solid #333; direction: ltr; font-family: monospace; }
+        .inv-header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <header id="mainHeader"><h1 id="shopName">Khalid Store</h1></header>
+
 <div id="storeGrid" class="grid"></div>
 
 <button class="admin-btn" onclick="checkPass()">[ Admin ]</button>
 
 <div id="adminPanel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-        <h2 style="margin:0;">🛠 لوحة التحكم</h2>
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="background:red; color:white; border:none; padding:10px 15px; border-radius:8px;">إغلاق</button>
+        <h2 style="margin:0;">🛠 الإدارة المالية والمخزن</h2>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" class="btn-red" style="width:auto; padding:5px 15px;">إغلاق</button>
     </div>
 
     <div class="admin-box">
-        <h3>🎨 الإعدادات</h3>
+        <h3>🎨 إعدادات المتجر</h3>
         <input type="text" id="setT" class="inp" placeholder="اسم المتجر">
-        <input type="text" id="setW" class="inp" placeholder="رقم الواتساب">
-        <label>الغلاف:</label><input type="file" class="inp" onchange="encodeImg('header')">
-        <label>الخلفية:</label><input type="file" class="inp" onchange="encodeImg('body')">
-        <button class="btn btn-main" onclick="saveSets()">حفظ الإعدادات</button>
+        <input type="text" id="setW" class="inp" placeholder="واتساب الطلبات">
+        <button class="btn btn-main" onclick="saveSets()">حفظ التغييرات</button>
     </div>
 
     <div class="admin-box">
@@ -72,44 +76,51 @@
         <input type="text" id="pN" class="inp" placeholder="اسم المنتج">
         <input type="number" id="pP" class="inp" placeholder="السعر">
         <input type="file" class="inp" multiple onchange="encodeMulti()">
-        <button class="btn btn-main" onclick="uploadP()">رفع المنتج</button>
+        <button class="btn btn-main" onclick="uploadP()">رفع المنتج للمتجر</button>
     </div>
 
-    <div class="admin-box"><h3>📥 الطلبات الجديدة</h3><div id="listOrders"></div></div>
-    <div class="admin-box"><h3>✅ الأرشيف</h3><div id="listArchive"></div></div>
-    <div class="admin-box"><h3>🗒 المخزن</h3><div id="listProds"></div></div>
+    <div class="admin-box"><h3>📥 طلبات جديدة</h3><div id="listOrders"></div></div>
+    <div class="admin-box"><h3>✅ الأرشيف والفواتير</h3><div id="listArchive"></div></div>
+    <div class="admin-box"><h3>🗒 المنتجات الحالية</h3><div id="listProds"></div></div>
 </div>
 
 <div id="modal" class="modal">
     <div class="modal-content">
-        <div class="viewer-box">
-            <button class="v-nav" style="right:10px;" onclick="changeImg(1)">❯</button>
-            <img id="vImg" src="">
-            <button class="v-nav" style="left:10px;" onclick="changeImg(-1)">❮</button>
-        </div>
-        <div id="orderForm">
-            <h3 id="targetN" style="text-align:center; margin-top:10px;"></h3>
-            <input type="text" id="cuN" class="inp" placeholder="الاسم الكامل">
-            <input type="text" id="cuP" class="inp" placeholder="رقم الهاتف">
-            <input type="number" id="cuQ" class="inp" value="1">
-            <button class="btn btn-main" onclick="confirmOrder()">إرسال الطلب</button>
-        </div>
-        <div id="invoiceSection" style="display:none;">
-            <div id="invoiceBox" style="background:#fff; color:#000; padding:15px; border:1px solid #000; direction:ltr;">
-                <h2 id="invShop" style="text-align:center;"></h2>
-                <hr><p>Order: #<span id="invSer"></span></p>
-                <p>Item: <span id="invItem"></span></p>
-                <p>Total: <b id="invTotal"></b> AED</p>
+        <div id="viewerUI">
+            <div class="viewer-box">
+                <button class="v-nav" style="right:10px;" onclick="changeImg(1)">❯</button>
+                <img id="vImg" src="">
+                <button class="v-nav" style="left:10px;" onclick="changeImg(-1)">❮</button>
             </div>
-            <button class="btn btn-main" onclick="downloadInv()">تحميل الفاتورة 📥</button>
-            <button class="btn" style="background:#25d366; color:white;" onclick="sendWA()">واتساب 💬</button>
+            <div id="orderForm">
+                <h3 id="targetN" style="text-align:center; margin-top:10px;"></h3>
+                <input type="text" id="cuN" class="inp" placeholder="اسم العميل">
+                <input type="text" id="cuP" class="inp" placeholder="رقم الهاتف">
+                <input type="number" id="cuQ" class="inp" value="1">
+                <button class="btn btn-main" onclick="confirmOrder()">تأكيد وإصدار فاتورة</button>
+            </div>
         </div>
-        <button class="btn" style="background:#eee; color:#333;" onclick="closeM()">إغلاق</button>
+
+        <div id="invoiceSection" style="display:none;">
+            <div id="invoiceBox">
+                <div class="inv-header"><h2 id="invShop"></h2><p>TAX INVOICE / فاتورة ضريبية</p></div>
+                <p><b>Inv No:</b> #<span id="invSer"></span></p>
+                <p><b>Date:</b> <span id="invDate"></span></p>
+                <p><b>Customer:</b> <span id="invCu"></span></p>
+                <hr><p><b>Item:</b> <span id="invItem"></span></p>
+                <p><b>Qty:</b> <span id="invQty"></span> | <b>Price:</b> <span id="invPr"></span></p>
+                <hr><h3 style="text-align:right;">TOTAL: <span id="invTotal"></span> AED</h3>
+            </div>
+            <div class="row-actions">
+                <button class="btn-main" onclick="downloadInv()">تحميل الفاتورة 📥</button>
+                <button style="background:#25d366; color:white;" onclick="sendWA()">واتساب 💬</button>
+            </div>
+        </div>
+        <button class="btn" style="background:#eee; color:#333; margin-top:10px;" onclick="closeM()">إغلاق</button>
     </div>
 </div>
 
 <script>
-    // تهيئة Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyD6nEUwZKumRxmYUdqiJISTYsKcy5j_ISM",
         authDomain: "khalid-store-86442.firebaseapp.com",
@@ -122,23 +133,58 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let sets = {}, tempImgs = [], tempHeader = "", tempBody = "", activeP = null, vIdx = 0, currentOrder = null;
+    let sets = {}, tempImgs = [], activeP = null, vIdx = 0, currentOrder = null;
+    let autoSliders = {}; // لتخزين عدادات السلايد شو
 
-    // جلب البيانات
     db.ref('settings').on('value', s => {
         sets = s.val() || { title: "Khalid Store", wa: "966", lastSerial: 1000 };
         document.getElementById('shopName').innerText = sets.title;
-        if(sets.hB) document.getElementById('mainHeader').style.backgroundImage = `url('${sets.hB}')`;
-        if(sets.bB) document.body.style.backgroundImage = `url('${sets.bB}')`;
     });
 
+    // جلب المنتجات مع السلايد شو التلقائي
     db.ref('items').on('value', s => {
-        const grid = document.getElementById('storeGrid'); const list = document.getElementById('listProds');
-        grid.innerHTML = ''; list.innerHTML = ''; const d = s.val();
+        const grid = document.getElementById('storeGrid');
+        const list = document.getElementById('listProds');
+        grid.innerHTML = ''; list.innerHTML = '';
+        const d = s.val();
+        
+        // مسح العدادات القديمة
+        Object.values(autoSliders).forEach(clearInterval);
+        autoSliders = {};
+
         if(d) Object.keys(d).forEach(k => {
-            const i = d[k]; const imgs = i.images || [i.img];
-            grid.innerHTML += `<div class="card" onclick="openM('${k}')"><img src="${imgs[0]}" class="card-img"><div class="p-info"><b>${i.name}</b><br><span class="p-price">${i.price} AED</span></div></div>`;
-            list.innerHTML += `<div class="row-item"><span>${i.name}</span><button onclick="db.ref('items/${k}').remove()" style="color:red;border:none;background:none;">حذف</button></div>`;
+            const i = d[k];
+            const imgs = i.images || [i.img];
+            
+            // إنشاء البطاقة
+            grid.innerHTML += `
+                <div class="card" onclick="openM('${k}')">
+                    <div class="img-container">
+                        <img id="img-${k}" src="${imgs[0]}" class="card-img">
+                    </div>
+                    <div style="padding:8px; text-align:center;">
+                        <b style="font-size:0.9rem;">${i.name}</b><br>
+                        <span style="color:var(--main); font-weight:bold;">${i.price} AED</span>
+                    </div>
+                </div>`;
+            
+            list.innerHTML += `<div class="row-item"><span>${i.name}</span><button onclick="db.ref('items/${k}').remove()" style="color:red; float:left; border:none; background:none; cursor:pointer;">حذف المنتج</button></div>`;
+
+            // تفعيل السلايد شو التلقائي (كل ثانيتين)
+            if(imgs.length > 1) {
+                let currentIdx = 0;
+                autoSliders[k] = setInterval(() => {
+                    currentIdx = (currentIdx + 1) % imgs.length;
+                    const imgEl = document.getElementById(`img-${k}`);
+                    if(imgEl) {
+                        imgEl.style.opacity = '0.3'; // تأثير ناعم
+                        setTimeout(() => {
+                            imgEl.src = imgs[currentIdx];
+                            imgEl.style.opacity = '1';
+                        }, 300);
+                    }
+                }, 2000); // ثانيتين
+            }
         });
     });
 
@@ -146,29 +192,20 @@
         const l = document.getElementById('listOrders'); const a = document.getElementById('listArchive');
         l.innerHTML = ''; a.innerHTML = ''; const d = s.val();
         if(d) Object.keys(d).forEach(k => {
-            const o = d[k]; const h = `<div class="row-item"><span>#${o.serial} - ${o.customer}</span><button onclick="db.ref('orders/${k}').update({status:'archived'})">أرشفة</button></div>`;
-            if(o.status === 'new') l.innerHTML += h; else a.innerHTML += h;
+            const o = d[k];
+            const itemHTML = `
+                <div class="row-item">
+                    <b>#${o.serial} - ${o.customer}</b><br>
+                    <div class="row-actions">
+                        <button style="background:var(--main); color:white;" onclick="viewTaxInv('${k}')">الفاتورة</button>
+                        ${o.status === 'new' ? `<button style="background:#2e7d32; color:white;" onclick="archiveOrder('${k}')">أرشفة</button>` : `<button style="background:#d32f2f; color:white;" onclick="deleteOrder('${k}')">حذف</button>`}
+                    </div>
+                </div>`;
+            if(o.status === 'new') l.innerHTML += itemHTML; else a.innerHTML += itemHTML;
         });
     });
 
-    // الوظائف
-    function checkPass() { if(prompt("أدخل الباسورد:") === "123") document.getElementById('adminPanel').style.display='block'; else alert("خطأ!"); }
-    
-    function encodeMulti() {
-        const files = event.target.files; tempImgs = [];
-        Array.from(files).forEach(f => { const r = new FileReader(); r.onloadend = () => tempImgs.push(r.result); r.readAsDataURL(f); });
-    }
-
-    function uploadP() {
-        const n = document.getElementById('pN').value, p = document.getElementById('pP').value;
-        if(n && p && tempImgs.length > 0) db.ref('items').push({ name: n, price: p, images: tempImgs }).then(() => alert("تمت الإضافة"));
-    }
-
-    function saveSets() {
-        let u = { title: document.getElementById('setT').value, wa: document.getElementById('setW').value };
-        if(tempHeader) u.hB = tempHeader; if(tempBody) u.bB = tempBody;
-        db.ref('settings').update(u).then(() => alert("تم الحفظ"));
-    }
+    function checkPass() { if(prompt("الباسورد:") === "123") document.getElementById('adminPanel').style.display='block'; }
 
     function openM(k) {
         db.ref('items/'+k).once('value', s => {
@@ -176,26 +213,45 @@
             document.getElementById('targetN').innerText = activeP.name;
             document.getElementById('vImg').src = (activeP.images || [activeP.img])[0];
             document.getElementById('modal').style.display = 'block';
-            document.getElementById('orderForm').style.display = 'block';
+            document.getElementById('viewerUI').style.display = 'block';
             document.getElementById('invoiceSection').style.display = 'none';
         });
     }
 
-    function changeImg(dir) { const imgs = activeP.images || [activeP.img]; vIdx = (vIdx + dir + imgs.length) % imgs.length; document.getElementById('vImg').src = imgs[vIdx]; }
+    function viewTaxInv(k) {
+        db.ref('orders/'+k).once('value', s => {
+            const o = s.val(); currentOrder = o;
+            document.getElementById('invShop').innerText = sets.title;
+            document.getElementById('invSer').innerText = o.serial;
+            document.getElementById('invDate').innerText = o.date;
+            document.getElementById('invCu').innerText = o.customer;
+            document.getElementById('invItem').innerText = o.name;
+            document.getElementById('invQty').innerText = o.qty;
+            document.getElementById('invPr').innerText = o.price;
+            document.getElementById('invTotal').innerText = o.price * o.qty;
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('viewerUI').style.display = 'none';
+            document.getElementById('invoiceSection').style.display = 'block';
+        });
+    }
 
     function confirmOrder() {
         const nS = (sets.lastSerial || 1000) + 1;
-        currentOrder = { name: activeP.name, customer: document.getElementById('cuN').value, qty: document.getElementById('cuQ').value, price: activeP.price, serial: nS };
-        db.ref('orders').push({...currentOrder, status: 'new'}); db.ref('settings').update({ lastSerial: nS });
-        document.getElementById('invShop').innerText = sets.title; document.getElementById('invSer').innerText = nS;
-        document.getElementById('invItem').innerText = currentOrder.name; document.getElementById('invTotal').innerText = currentOrder.price * currentOrder.qty;
-        document.getElementById('orderForm').style.display = 'none'; document.getElementById('invoiceSection').style.display = 'block';
+        const o = { name: activeP.name, customer: document.getElementById('cuN').value, qty: document.getElementById('cuQ').value, price: activeP.price, serial: nS, date: new Date().toLocaleDateString(), status: 'new' };
+        db.ref('orders').push(o); db.ref('settings').update({ lastSerial: nS });
+        currentOrder = o;
+        viewTaxInv(Object.keys(o)[0]); // عرض الفاتورة فوراً للعميل
     }
 
-    function encodeImg(t) { const f = event.target.files[0]; const r = new FileReader(); r.onloadend = () => { if(t==='header') tempHeader = r.result; else tempBody = r.result; }; r.readAsDataURL(f); }
-    function downloadInv() { html2canvas(document.getElementById('invoiceBox')).then(c => { const l = document.createElement('a'); l.download='inv.png'; l.href=c.toDataURL(); l.click(); }); }
-    function sendWA() { window.open(`https://wa.me/${sets.wa}?text=طلب رقم ${currentOrder.serial}`, '_blank'); }
+    function archiveOrder(k) { db.ref('orders/'+k).update({status: 'archived'}); }
+    function deleteOrder(k) { if(confirm("حذف نهائي؟")) db.ref('orders/'+k).remove(); }
+    function changeImg(dir) { const imgs = activeP.images || [activeP.img]; vIdx = (vIdx + dir + imgs.length) % imgs.length; document.getElementById('vImg').src = imgs[vIdx]; }
+    function encodeMulti() { const files = event.target.files; tempImgs = []; Array.from(files).forEach(f => { const r = new FileReader(); r.onloadend = () => tempImgs.push(r.result); r.readAsDataURL(f); }); }
+    function uploadP() { const n = document.getElementById('pN').value, p = document.getElementById('pP').value; if(n && p) db.ref('items').push({ name: n, price: p, images: tempImgs }).then(() => alert("تمت الإضافة")); }
+    function saveSets() { db.ref('settings').update({ title: document.getElementById('setT').value, wa: document.getElementById('setW').value }); alert("تم الحفظ"); }
     function closeM() { document.getElementById('modal').style.display = 'none'; }
+    function downloadInv() { html2canvas(document.getElementById('invoiceBox')).then(c => { const l = document.createElement('a'); l.download='Invoice.png'; l.href=c.toDataURL(); l.click(); }); }
+    function sendWA() { window.open(`https://wa.me/${sets.wa}?text=طلب رقم ${currentOrder.serial}`, '_blank'); }
 </script>
 </body>
 </html>
